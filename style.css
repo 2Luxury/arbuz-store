@@ -5,37 +5,40 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #183a2a, #0b1114);
+  background:
+    radial-gradient(1200px 400px at top, rgba(80,255,160,.25), transparent),
+    #050807;
   color: white;
 }
 
+/* GLASS */
 .glass {
-  background: rgba(20, 40, 30, 0.55);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
+/* APP */
 #app {
-  padding: 20px 16px 110px;
+  padding: 20px 16px 120px;
 }
 
-/* HEADER */
 h1 {
   margin: 0;
   font-size: 26px;
 }
 
 .hook {
-  opacity: .6;
+  opacity: .65;
   font-size: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-/* TABS */
+/* ===== CATEGORIES ===== */
 .tabs-wrapper {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding: 6px;
   border-radius: 999px;
 }
@@ -48,10 +51,15 @@ h1 {
 
 .tabs button {
   flex: 1;
-  background: transparent;
+  background: none;
   border: none;
   color: white;
   padding: 10px 0;
+  opacity: .65;
+}
+
+.tabs button.active {
+  opacity: 1;
 }
 
 .tab-indicator {
@@ -61,12 +69,12 @@ h1 {
   width: 20%;
   height: calc(100% - 12px);
   border-radius: 999px;
-  background: rgba(61,220,132,.9);
-  transition: transform .35s cubic-bezier(.4,1.4,.6,1);
-  z-index: 1;
+  background: rgba(80,255,160,0.35);
+  backdrop-filter: blur(18px);
+  transition: transform .35s cubic-bezier(.4,1.3,.4,1);
 }
 
-/* FILTERS */
+/* ===== FILTERS ===== */
 .filters {
   display: flex;
   gap: 8px;
@@ -76,14 +84,14 @@ h1 {
 .filters input,
 .filters select {
   flex: 1;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 14px;
   border: none;
   background: rgba(255,255,255,.08);
   color: white;
 }
 
-/* CARDS */
+/* ===== CARDS ===== */
 .card {
   position: relative;
   padding: 16px;
@@ -96,7 +104,7 @@ h1 {
 }
 
 .price {
-  opacity: .7;
+  opacity: .65;
   margin-bottom: 12px;
 }
 
@@ -105,18 +113,23 @@ h1 {
   padding: 12px;
   border-radius: 999px;
   border: none;
-  background: #3ddc84;
+  background: rgba(80,255,160,.85);
   font-weight: 600;
 }
 
+/* HEART */
 .heart {
   position: absolute;
   top: 14px;
   right: 14px;
-  opacity: .5;
+  opacity: .4;
 }
 
-/* BOTTOM BAR */
+.heart.active {
+  opacity: 1;
+}
+
+/* ===== BOTTOM ===== */
 #bottom-bar {
   position: fixed;
   bottom: 12px;
@@ -125,8 +138,8 @@ h1 {
   height: 64px;
   border-radius: 26px;
   display: flex;
-  align-items: center;
   justify-content: space-around;
+  align-items: center;
 }
 
 #bottom-bar button {
@@ -134,16 +147,28 @@ h1 {
   border: none;
   color: white;
   font-size: 20px;
+  position: relative;
   z-index: 2;
+}
+
+.count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-size: 10px;
+  background: rgba(80,255,160,.9);
+  color: black;
+  padding: 2px 5px;
+  border-radius: 999px;
 }
 
 #bottom-indicator {
   position: absolute;
-  left: 10px;
+  left: 8px;
   width: 20%;
   height: 80%;
   border-radius: 20px;
-  background: rgba(61,220,132,.45);
-  transition: transform .35s cubic-bezier(.4,1.4,.6,1);
-  z-index: 1;
+  background: rgba(80,255,160,.22);
+  backdrop-filter: blur(18px);
+  transition: transform .35s cubic-bezier(.4,1.3,.4,1);
 }

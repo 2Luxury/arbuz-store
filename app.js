@@ -1,8 +1,6 @@
 const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-}
+tg?.ready();
+tg?.expand();
 
 const app = document.getElementById("app");
 const bottom = document.getElementById("bottom-bar");
@@ -25,13 +23,20 @@ const products = [
 
 function render() {
   if (state.tab === "shop") renderShop();
-  if (state.tab === "favorites") app.innerHTML = "<h2>❤️ Избранное</h2><p>Пусто</p>";
-  if (state.tab === "cart") app.innerHTML = "<h2>🛒 Корзина</h2><p>Пусто</p>";
-  if (state.tab === "game") app.innerHTML = "<h2>🎮 Игра</h2><p>Скоро</p>";
-  if (state.tab === "profile") app.innerHTML = "<h2>👤 Профиль</h2>";
+  if (state.tab === "favorites") renderList("❤️ Избранное", state.favorites);
+  if (state.tab === "cart") renderList("🛒 Корзина", state.cart);
+  updateCounts();
 }
 
 function renderShop() {
+  const filtered = products.filter(p => {
+    if (state.category !== "all" && p.category !== state.category) return false;
+    if (state.filters.maxPrice && p.price > state.filters.maxPrice) return false;
+    if (state.filters.size && p.size !== state.filters.size) return false;
+    if (state.filters.condition && p.condition !== state.filters.condition) return false;
+    return true;
+  });
+
   app.innerHTML = `
     <h1>🍉 Арбуз Маркет</h1>
     <div class="hook">streetwear with history</div>
@@ -39,11 +44,11 @@ function renderShop() {
     <div class="tabs-wrapper glass">
       <div class="tab-indicator" id="tab-indicator"></div>
       <div class="tabs">
-        <button data-cat="all">Все</button>
-        <button data-cat="hoodie">Кофты</button>
-        <button data-cat="jacket">Куртки</button>
-        <button data-cat="shoes">Обувь</button>
-        <button data-cat="belt">Ремни</button>
+        ${["all","hoodie","jacket","shoes","belt"].map(c=>`
+          <button class="${state.category===c?"active":""}"
+            onclick="setCategory('${c}')">
+            ${label(c)}
+          </button>`).join("")}
       </div>
     </div>
 
@@ -62,28 +67,63 @@ function renderShop() {
       </select>
     </div>
 
-    ${products.map(p=>`
+    ${filtered.map(p=>`
       <div class="card glass">
-        <div class="heart">❤️</div>
+        <div class="heart ${state.favorites.includes(p.id)?"active":""}"
+          onclick="toggleFav(${p.id})">❤️</div>
         <h3>${p.name}</h3>
         <div class="price">₽ ${p.price} · ${p.size}</div>
-        <button class="btn">В корзину</button>
+        <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
       </div>
-    `).join("")}
+    `).join("") || "<p>Ничего не найдено</p>"}
   `;
 
-  initTabs();
+  moveTabIndicator();
 }
 
-function initTabs() {
-  const buttons = document.querySelectorAll(".tabs button");
-  const indicator = document.getElementById("tab-indicator");
-  buttons.forEach((b,i)=>{
-    b.onclick=()=>{
-      state.category=b.dataset.cat;
-      indicator.style.transform=`translateX(${i*100}%)`;
-    };
-  });
+function setCategory(c){
+  state.category=c;
+  render();
+}
+
+function moveTabIndicator(){
+  const i = ["all","hoodie","jacket","shoes","belt"].indexOf(state.category);
+  document.getElementById("tab-indicator").style.transform=`translateX(${i*100}%)`;
+}
+
+function toggleFav(id){
+  state.favorites.includes(id)
+    ? state.favorites = state.favorites.filter(x=>x!==id)
+    : state.favorites.push(id);
+  render();
+}
+
+function addToCart(id){
+  state.cart.push(id);
+  render();
+}
+
+function renderList(title, list){
+  app.innerHTML = `<h2>${title}</h2>` +
+    (list.length
+      ? list.map(id=>`<p>${products.find(p=>p.id===id).name}</p>`).join("")
+      : "<p>Пусто</p>");
+}
+
+function updateCounts(){
+  document.querySelectorAll(".count").forEach(e=>e.remove());
+  addCount(1, state.favorites.length);
+  addCount(3, state.cart.length);
+}
+
+function addCount(index, value){
+  if (!value) return;
+  const btn = bottom.children[index];
+  btn.innerHTML += `<span class="count">${value}</span>`;
+}
+
+function label(c){
+  return {all:"Все",hoodie:"Кофты",jacket:"Куртки",shoes:"Обувь",belt:"Ремни"}[c];
 }
 
 bottom.querySelectorAll("button").forEach((b,i)=>{
