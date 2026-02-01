@@ -6,12 +6,12 @@ const app = document.getElementById("app");
 const bottom = document.getElementById("bottom-bar");
 const bottomIndicator = document.getElementById("bottom-indicator");
 
-/* STATE */
+/* ---------- STATE ---------- */
 const state = {
   tab: "shop",
   category: "all",
-  cart: [],
-  favorites: []
+  cart: new Set(),
+  favorites: new Set()
 };
 
 const products = [
@@ -29,15 +29,17 @@ const cats = [
   {id:"belt",label:"Ремни"},
 ];
 
+/* ---------- RENDER ---------- */
 function render() {
   if (state.tab === "shop") shop();
   if (state.tab === "favorites") favs();
   if (state.tab === "cart") cart();
   if (state.tab === "game") app.innerHTML = "<h2>🎮 Игра скоро</h2>";
   if (state.tab === "profile") app.innerHTML = "<h2>👤 Профиль</h2>";
-  counts();
+  updateBadges();
 }
 
+/* ---------- SHOP ---------- */
 function shop() {
   const list = products.filter(p =>
     state.category === "all" || p.cat === state.category
@@ -50,9 +52,9 @@ function shop() {
     <div class="tabs-wrapper glass">
       <div class="tab-indicator" id="cat-indicator"></div>
       <div class="tabs">
-        ${cats.map(c=>`
+        ${cats.map((c,i)=>`
           <button class="${c.id===state.category?"active":""}"
-            onclick="setCat('${c.id}')">${c.label}</button>
+            onclick="setCat('${c.id}', ${i})">${c.label}</button>
         `).join("")}
       </div>
     </div>
@@ -60,31 +62,49 @@ function shop() {
     ${list.map(card).join("")}
   `;
 
-  moveCat();
+  moveCategoryIndicator();
 }
 
+/* ---------- CARD ---------- */
 function card(p) {
+  const fav = state.favorites.has(p.id);
+  const inCart = state.cart.has(p.id);
+
   return `
     <div class="card glass">
-      <div class="heart ${state.favorites.includes(p.id)?"active":""}"
-        onclick="fav(${p.id})">❤️</div>
+      <div class="heart ${fav?"active":""}"
+        onclick="toggleFavorite(${p.id})">❤️</div>
       <h3>${p.name}</h3>
       <div class="price">₽ ${p.price} · ${p.size}</div>
-      <button class="btn" onclick="add(${p.id})">В корзину</button>
+      <button class="btn" 
+        ${inCart?"disabled":""}
+        onclick="addToCart(${p.id})">
+        ${inCart ? "В корзине" : "В корзину"}
+      </button>
     </div>
   `;
 }
 
+/* ---------- FAVORITES ---------- */
 function favs() {
-  app.innerHTML = `<h2>❤️ Избранное</h2>` +
-    (state.favorites.length
-      ? state.favorites.map(id=>card(products.find(p=>p.id===id))).join("")
-      : "<p>Пусто</p>");
+  if (!state.favorites.size) {
+    app.innerHTML = "<h2>❤️ Избранное</h2><p>Пусто</p>";
+    return;
+  }
+
+  app.innerHTML = `
+    <h2>❤️ Избранное</h2>
+    ${[...state.favorites]
+      .map(id => card(products.find(p=>p.id===id)))
+      .join("")}
+  `;
 }
 
+/* ---------- CART ---------- */
 function cart() {
-  const items = state.cart.map(id=>products.find(p=>p.id===id));
+  const items = [...state.cart].map(id=>products.find(p=>p.id===id));
   const total = items.reduce((s,p)=>s+p.price,0);
+
   app.innerHTML = `
     <h2>🛒 Корзина</h2>
     ${items.map(p=>`<p>${p.name} — ₽${p.price}</p>`).join("")}
@@ -93,43 +113,59 @@ function cart() {
   `;
 }
 
-/* ACTIONS */
-function setCat(c){ state.category=c; render(); }
-function add(id){ state.cart.push(id); render(); }
-function fav(id){
-  state.favorites.includes(id)
-    ? state.favorites = state.favorites.filter(x=>x!==id)
-    : state.favorites.push(id);
+/* ---------- ACTIONS ---------- */
+function setCat(cat, index) {
+  state.category = cat;
+  moveCategoryIndicator(index);
   render();
 }
 
-/* INDICATORS */
-function moveCat(){
-  const i = cats.findIndex(c=>c.id===state.category);
-  document.getElementById("cat-indicator")
-    .style.transform = `translateX(${i*100}%)`;
+function addToCart(id) {
+  if (state.cart.has(id)) return;
+  state.cart.add(id);
+  render();
 }
 
-bottom.querySelectorAll("button").forEach((b,i)=>{
-  b.onclick = ()=>{
-    state.tab = b.dataset.tab;
+function toggleFavorite(id) {
+  state.favorites.has(id)
+    ? state.favorites.delete(id)
+    : state.favorites.add(id);
+  render();
+}
+
+/* ---------- CATEGORY INDICATOR ---------- */
+function moveCategoryIndicator(index) {
+  const i = index ?? cats.findIndex(c=>c.id===state.category);
+  document.getElementById("cat-indicator")
+    .style.transform = `translateX(${i * 100}%)`;
+}
+
+/* ---------- BOTTOM NAV ---------- */
+const bottomTabs = ["shop","favorites","game","cart","profile"];
+
+bottom.querySelectorAll("button").forEach((btn,i)=>{
+  btn.onclick = ()=>{
+    state.tab = bottomTabs[i];
     bottomIndicator.style.transform = `translateX(${i*100}%)`;
-    bottom.querySelectorAll("button").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
+    bottom.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
     render();
   };
 });
 
-/* COUNTS */
-function counts(){
+/* ---------- BADGES ---------- */
+function updateBadges() {
   document.querySelectorAll(".count").forEach(x=>x.remove());
-  if (state.favorites.length) badge("favorites", state.favorites.length);
-  if (state.cart.length) badge("cart", state.cart.length);
+
+  if (state.favorites.size) addBadge(1, state.favorites.size);
+  if (state.cart.size) addBadge(3, state.cart.size);
 }
 
-function badge(tab,n){
-  const btn=[...bottom.children].find(b=>b.dataset.tab===tab);
-  btn.innerHTML+=`<span class="count">${n}</span>`;
+function addBadge(index, count) {
+  const btn = bottom.querySelectorAll("button")[index];
+  btn.insertAdjacentHTML("beforeend",
+    `<span class="count">${count}</span>`
+  );
 }
 
 render();
