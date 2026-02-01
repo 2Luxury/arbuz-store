@@ -1,95 +1,92 @@
-const state = {
-  tab: "shop",
-  category: "all",
-  cart: new Set(),
-  fav: new Set()
-};
-
-const products = [
-  {id:1, name:"Nike Hoodie", price:6500, size:"XXS-XXL", cat:"hoodie"},
-  {id:2, name:"Calvin Klein Jacket", price:10000, size:"XXS-XXL", cat:"jacket"},
-  {id:3, name:"Nike Jordan 1", price:6500, size:"36-46", cat:"shoes"},
-  {id:4, name:"Leather Belt", price:2500, size:"M", cat:"belt"}
-];
-
-const app = document.getElementById("app");
-
-function render() {
-  updateCounts();
-  moveBottom();
-  if(state.tab==="shop") shopView();
-  if(state.tab==="fav") favView();
-  if(state.tab==="cart") cartView();
-  if(state.tab==="game") app.innerHTML="<h2>🎮 Скоро игра</h2>";
-  if(state.tab==="profile") app.innerHTML="<h2>👤 Профиль</h2>";
+const state={
+  tab:"shop",
+  cat:"all",
+  catIndex:0,
+  tabIndex:0,
+  cart:new Set(),
+  fav:new Set()
 }
 
-function shopView() {
-  const cats = ["all","hoodie","jacket","shoes","belt"];
-  const labels = ["Все","Кофты","Куртки","Обувь","Ремни"];
-  app.innerHTML = `
-    <h1>🍉 Арбуз Маркет</h1>
-    <div class="sub">streetwear with history</div>
+const items=[
+ {id:1,name:"Nike Hoodie",price:6500,cat:"hood"},
+ {id:2,name:"Calvin Klein Jacket",price:10000,cat:"jacket"},
+ {id:3,name:"Nike Jordan 1",price:6500,cat:"shoes"},
+ {id:4,name:"Leather Belt",price:2500,cat:"belt"},
+]
 
-    <div class="categories glass">
-      <div class="cat-indicator" id="cat-ind"></div>
-      ${labels.map((l,i)=>`<button onclick="setCat('${cats[i]}',${i})">${l}</button>`).join("")}
+function setTab(t,i){
+  state.tab=t;state.tabIndex=i;render()
+}
+function setCat(c,i){
+  state.cat=c;state.catIndex=i;render()
+}
+
+function toggleFav(id){
+  state.fav.has(id)?state.fav.delete(id):state.fav.add(id)
+  render()
+}
+function addCart(id){
+  state.cart.add(id)
+  render()
+}
+
+function render(){
+  const app=document.getElementById("app")
+  document.getElementById("cart-c").innerText=state.cart.size||""
+  document.getElementById("fav-c").innerText=state.fav.size||""
+
+  if(state.tab==="shop"){
+    app.innerHTML=`
+    <div class="glass">
+      <h1>🍉 Арбуз Маркет</h1>
+      <div class="sub">Streetwear with character</div>
+      <div class="cats">
+        <div class="ind" id="cat-ind"></div>
+        <button onclick="setCat('all',0)">Все</button>
+        <button onclick="setCat('hood',1)">Кофты</button>
+        <button onclick="setCat('jacket',2)">Куртки</button>
+        <button onclick="setCat('shoes',3)">Обувь</button>
+        <button onclick="setCat('belt',4)">Ремни</button>
+      </div>
     </div>
+    ${items.filter(i=>state.cat==="all"||i.cat===state.cat).map(i=>`
+      <div class="glass item">
+        <button class="heart" onclick="toggleFav(${i.id})">
+          ${state.fav.has(i.id)?"❤️":"🤍"}
+        </button>
+        <h3>${i.name}</h3>
+        <div class="price">₽ ${i.price}</div>
+        <button class="add" onclick="addCart(${i.id})">
+          ${state.cart.has(i.id)?"В корзине":"В корзину"}
+        </button>
+      </div>
+    `).join("")}`
+    requestAnimationFrame(()=>{
+      document.getElementById("cat-ind").style.transform=
+        `translateX(${state.catIndex*100}%)`
+    })
+  }
 
-    ${products
-      .filter(p=>state.category==="all"||p.cat===state.category)
-      .map(p=>`
-        <div class="card glass">
-          <div class="heart ${state.fav.has(p.id)?"active":""}" onclick="toggleFav(${p.id})">❤️</div>
-          <h3>${p.name}</h3>
-          <div class="meta">₽${p.price} · ${p.size}</div>
-          <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
-        </div>
-      `).join("")}
-  `;
+  if(state.tab==="fav"){
+    app.innerHTML=`<h2>❤️ Избранное</h2>`+
+      [...state.fav].map(id=>{
+        const i=items.find(x=>x.id===id)
+        return `<div class="glass">${i.name}</div>`
+      }).join("")||"Пусто"
+  }
+
+  if(state.tab==="cart"){
+    let sum=0
+    app.innerHTML=`<h2>🛒 Корзина</h2>`+
+    [...state.cart].map(id=>{
+      const i=items.find(x=>x.id===id);sum+=i.price
+      return `<div>${i.name} — ₽${i.price}</div>`
+    }).join("")+
+    `<h3>Итого: ₽${sum}</h3>`
+  }
+
+  document.getElementById("tab-ind").style.transform=
+    `translateX(${state.tabIndex*100}%)`
 }
 
-function favView() {
-  app.innerHTML = `<h2>❤️ Избранное</h2>` +
-    [...state.fav].map(id=>{
-      const p=products.find(x=>x.id===id);
-      return `<div class="card glass">
-        <h3>${p.name}</h3>
-        <button class="btn" onclick="addToCart(${id})">В корзину</button>
-      </div>`;
-    }).join("") || "<p>Пусто</p>";
-}
-
-function cartView() {
-  const items=[...state.cart].map(id=>products.find(p=>p.id===id));
-  const sum=items.reduce((s,p)=>s+p.price,0);
-  app.innerHTML=`<h2>🛒 Корзина</h2>
-    ${items.map(p=>`<p>${p.name} — ₽${p.price}</p>`).join("")}
-    <h3>Итого: ₽${sum}</h3>
-    <button class="btn">Купить</button>`;
-}
-
-function addToCart(id){ if(state.cart.has(id))return; state.cart.add(id); render(); }
-function toggleFav(id){ state.fav.has(id)?state.fav.delete(id):state.fav.add(id); render(); }
-
-function setCat(cat,i){
-  state.category=cat;
-  document.getElementById("cat-ind").style.transform=`translateX(${i*100}%)`;
-  render();
-}
-
-function updateCounts(){
-  document.getElementById("cart-count").textContent=state.cart.size||"";
-  document.getElementById("fav-count").textContent=state.fav.size||"";
-}
-
-function moveBottom(){
-  const i=["shop","fav","game","cart","profile"].indexOf(state.tab);
-  document.getElementById("bottom-indicator").style.transform=`translateX(${i*100}%)`;
-}
-
-document.querySelectorAll(".bottom button").forEach((b,i)=>{
-  b.onclick=()=>{ state.tab=b.dataset.tab; moveBottom(); render(); }
-});
-
-render();
+render()
