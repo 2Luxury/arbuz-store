@@ -2,25 +2,23 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ARBuz Store</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARBUZ STORE</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="bg"></div>
+<div id="bg"></div>
 
-<div class="app">
-  <div id="app"></div>
+<div id="app"></div>
 
-  <div id="bottom-bar" class="bottom glass">
-    <div id="bottom-indicator"></div>
-    <button data-tab="shop">🍉</button>
-    <button data-tab="favorites">❤️</button>
-    <button data-tab="game">🎮</button>
-    <button data-tab="cart">🛒</button>
-    <button data-tab="profile">👤</button>
-  </div>
+<div id="bottom-bar" class="bottom glass">
+  <div class="indicator" id="bottom-indicator"></div>
+  <button data-tab="shop">🍉</button>
+  <button data-tab="fav">❤️ <span class="count" id="fav-count"></span></button>
+  <button data-tab="game">🎮</button>
+  <button data-tab="cart">🛒 <span class="count" id="cart-count"></span></button>
+  <button data-tab="profile">👤</button>
 </div>
 
 <script src="app.js"></script>
