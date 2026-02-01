@@ -5,45 +5,68 @@
 
 body {
   margin: 0;
-  background: radial-gradient(1200px at 20% -10%, #1f4037, #0b0f14 60%);
+  background: radial-gradient(circle at top, #183a2a, #0b1114);
   color: white;
 }
 
-#app {
-  padding: 16px;
-  padding-bottom: 90px;
-}
-
 .glass {
-  backdrop-filter: blur(18px) saturate(140%);
-  background: rgba(20, 30, 35, 0.55);
+  background: rgba(20, 40, 30, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 20px 60px rgba(0,0,0,.4);
 }
 
+#app {
+  padding: 20px 16px 110px;
+}
+
+/* HEADER */
 h1 {
-  margin: 0 0 4px;
+  margin: 0;
+  font-size: 26px;
+}
+
+.hook {
+  opacity: .6;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* TABS */
+.tabs-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 6px;
+  border-radius: 999px;
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
-  margin: 14px 0;
+  position: relative;
+  z-index: 2;
 }
 
 .tabs button {
-  padding: 8px 14px;
-  border-radius: 999px;
+  flex: 1;
+  background: transparent;
   border: none;
   color: white;
-  background: rgba(255,255,255,0.08);
+  padding: 10px 0;
 }
 
-.tabs button.active {
-  background: #3ddc84;
-  color: black;
+.tab-indicator {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 20%;
+  height: calc(100% - 12px);
+  border-radius: 999px;
+  background: rgba(61,220,132,.9);
+  transition: transform .35s cubic-bezier(.4,1.4,.6,1);
+  z-index: 1;
 }
 
+/* FILTERS */
 .filters {
   display: flex;
   gap: 8px;
@@ -54,61 +77,73 @@ h1 {
 .filters select {
   flex: 1;
   padding: 10px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,.08);
   color: white;
 }
 
+/* CARDS */
 .card {
   position: relative;
-  margin-bottom: 12px;
   padding: 16px;
-  border-radius: 18px;
+  border-radius: 22px;
+  margin-bottom: 12px;
 }
 
-.card .heart {
-  position: absolute;
-  right: 14px;
-  top: 14px;
-  cursor: pointer;
-  opacity: .5;
-}
-
-.card .heart.active {
-  opacity: 1;
+.card h3 {
+  margin: 0 0 6px;
 }
 
 .price {
   opacity: .7;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .btn {
   width: 100%;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 999px;
   border: none;
   background: #3ddc84;
-  color: black;
   font-weight: 600;
 }
 
+.heart {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  opacity: .5;
+}
+
+/* BOTTOM BAR */
 #bottom-bar {
   position: fixed;
   bottom: 12px;
   left: 12px;
   right: 12px;
   height: 64px;
-  border-radius: 22px;
+  border-radius: 26px;
   display: flex;
-  justify-content: space-around;
   align-items: center;
+  justify-content: space-around;
 }
 
 #bottom-bar button {
   background: none;
   border: none;
   color: white;
-  font-size: 22px;
+  font-size: 20px;
+  z-index: 2;
+}
+
+#bottom-indicator {
+  position: absolute;
+  left: 10px;
+  width: 20%;
+  height: 80%;
+  border-radius: 20px;
+  background: rgba(61,220,132,.45);
+  transition: transform .35s cubic-bezier(.4,1.4,.6,1);
+  z-index: 1;
 }

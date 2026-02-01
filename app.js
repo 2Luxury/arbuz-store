@@ -6,138 +6,92 @@ if (tg) {
 
 const app = document.getElementById("app");
 const bottom = document.getElementById("bottom-bar");
+const bottomIndicator = document.getElementById("bottom-indicator");
 
 const state = {
   tab: "shop",
   category: "all",
   cart: [],
   favorites: [],
-  filters: {
-    maxPrice: null,
-    size: null,
-    condition: null
-  }
+  filters: { maxPrice:null, size:null, condition:null }
 };
 
 const products = [
-  { id:1, name:"Nike Hoodie", price:6500, size:"L", condition:"used", category:"hoodie" },
-  { id:2, name:"Calvin Klein Jacket", price:10000, size:"L", condition:"new", category:"jacket" },
-  { id:3, name:"Nike Jordan 1", price:6500, size:"43", condition:"used", category:"shoes" },
-  { id:4, name:"Leather Belt", price:2500, size:"M", condition:"new", category:"belt" }
+  {id:1,name:"Nike Hoodie",price:6500,size:"XXS-XXL",condition:"used",category:"hoodie"},
+  {id:2,name:"Calvin Klein Jacket",price:10000,size:"XXS-XXL",condition:"new",category:"jacket"},
+  {id:3,name:"Nike Jordan 1",price:6500,size:"36-46",condition:"used",category:"shoes"},
+  {id:4,name:"Leather Belt",price:2500,size:"M",condition:"new",category:"belt"}
 ];
 
-bottom.querySelectorAll("button").forEach(b => {
-  b.onclick = () => {
-    state.tab = b.dataset.tab;
-    render();
-  };
-});
-
 function render() {
-  if (state.tab === "shop") return renderShop();
-  if (state.tab === "favorites") return renderFavorites();
-  if (state.tab === "cart") return renderCart();
-  if (state.tab === "game") return renderGame();
-  if (state.tab === "profile") return renderProfile();
+  if (state.tab === "shop") renderShop();
+  if (state.tab === "favorites") app.innerHTML = "<h2>❤️ Избранное</h2><p>Пусто</p>";
+  if (state.tab === "cart") app.innerHTML = "<h2>🛒 Корзина</h2><p>Пусто</p>";
+  if (state.tab === "game") app.innerHTML = "<h2>🎮 Игра</h2><p>Скоро</p>";
+  if (state.tab === "profile") app.innerHTML = "<h2>👤 Профиль</h2>";
 }
 
 function renderShop() {
-  const filtered = products.filter(p => {
-    if (state.category !== "all" && p.category !== state.category) return false;
-    if (state.filters.maxPrice && p.price > state.filters.maxPrice) return false;
-    if (state.filters.size && p.size !== state.filters.size) return false;
-    if (state.filters.condition && p.condition !== state.filters.condition) return false;
-    return true;
-  });
-
   app.innerHTML = `
     <h1>🍉 Арбуз Маркет</h1>
-    <p style="opacity:.6">resale · street · clean</p>
+    <div class="hook">streetwear with history</div>
 
-    <div class="tabs">
-      ${["all","hoodie","jacket","shoes","belt"].map(c => `
-        <button class="${state.category===c?"active":""}"
-          onclick="setCategory('${c}')">${labelCategory(c)}</button>
-      `).join("")}
+    <div class="tabs-wrapper glass">
+      <div class="tab-indicator" id="tab-indicator"></div>
+      <div class="tabs">
+        <button data-cat="all">Все</button>
+        <button data-cat="hoodie">Кофты</button>
+        <button data-cat="jacket">Куртки</button>
+        <button data-cat="shoes">Обувь</button>
+        <button data-cat="belt">Ремни</button>
+      </div>
     </div>
 
     <div class="filters">
       <input type="number" placeholder="Бюджет ₽"
-        onchange="setFilter('maxPrice', this.value)">
-      <select onchange="setFilter('size', this.value)">
+        onchange="state.filters.maxPrice=this.value||null;render()">
+      <select onchange="state.filters.size=this.value||null;render()">
         <option value="">Размер</option>
-        <option>L</option><option>M</option><option>43</option>
+        <option>36-46</option>
+        <option>XXS-XXL</option>
       </select>
-      <select onchange="setFilter('condition', this.value)">
+      <select onchange="state.filters.condition=this.value||null;render()">
         <option value="">Состояние</option>
-        <option>new</option><option>used</option>
+        <option>new</option>
+        <option>used</option>
       </select>
     </div>
 
-    ${filtered.map(cardHTML).join("") || "<p>Ничего не найдено</p>"}
+    ${products.map(p=>`
+      <div class="card glass">
+        <div class="heart">❤️</div>
+        <h3>${p.name}</h3>
+        <div class="price">₽ ${p.price} · ${p.size}</div>
+        <button class="btn">В корзину</button>
+      </div>
+    `).join("")}
   `;
+
+  initTabs();
 }
 
-function renderFavorites() {
-  const favs = products.filter(p => state.favorites.includes(p.id));
-  app.innerHTML = `<h1>❤️ Избранное</h1>` +
-    (favs.length ? favs.map(cardHTML).join("") : "<p>Пусто</p>");
+function initTabs() {
+  const buttons = document.querySelectorAll(".tabs button");
+  const indicator = document.getElementById("tab-indicator");
+  buttons.forEach((b,i)=>{
+    b.onclick=()=>{
+      state.category=b.dataset.cat;
+      indicator.style.transform=`translateX(${i*100}%)`;
+    };
+  });
 }
 
-function renderCart() {
-  const items = products.filter(p => state.cart.includes(p.id));
-  const sum = items.reduce((s,p)=>s+p.price,0);
-  app.innerHTML = `
-    <h1>🛒 Корзина</h1>
-    ${items.map(p=>`<p>${p.name} — ₽${p.price}</p>`).join("")}
-    <h3>Итого: ₽${sum}</h3>
-    ${items.length ? `<button class="btn">Купить</button>` : "<p>Пусто</p>"}
-  `;
-}
-
-function renderGame() {
-  app.innerHTML = `<h1>🎮 Игра</h1><p>Ловим арбузы — скидки позже</p>`;
-}
-
-function renderProfile() {
-  app.innerHTML = `<h1>👤 Профиль</h1><p>Скоро</p>`;
-}
-
-function cardHTML(p) {
-  return `
-    <div class="card glass">
-      <div class="heart ${state.favorites.includes(p.id)?"active":""}"
-        onclick="toggleFav(${p.id})">❤️</div>
-      <h3>${p.name}</h3>
-      <div class="price">₽ ${p.price} · ${p.size}</div>
-      <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
-    </div>
-  `;
-}
-
-function addToCart(id) {
-  if (!state.cart.includes(id)) state.cart.push(id);
-}
-
-function toggleFav(id) {
-  state.favorites.includes(id)
-    ? state.favorites = state.favorites.filter(x=>x!==id)
-    : state.favorites.push(id);
-  render();
-}
-
-function setCategory(c) {
-  state.category = c;
-  render();
-}
-
-function setFilter(k,v) {
-  state.filters[k] = v || null;
-  render();
-}
-
-function labelCategory(c) {
-  return {all:"Все",hoodie:"Кофты",jacket:"Куртки",shoes:"Обувь",belt:"Ремни"}[c];
-}
+bottom.querySelectorAll("button").forEach((b,i)=>{
+  b.onclick=()=>{
+    state.tab=b.dataset.tab;
+    bottomIndicator.style.transform=`translateX(${i*100}%)`;
+    render();
+  };
+});
 
 render();
