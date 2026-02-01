@@ -1,35 +1,49 @@
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
-  background: #0f1419;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background: radial-gradient(circle at top, #1e2f2a, #0b0f13);
   color: #fff;
 }
 
-.header {
+#app {
   padding: 16px;
-  position: relative;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .subtitle {
+  opacity: .6;
   font-size: 13px;
-  opacity: 0.6;
 }
 
-.cart-btn {
-  position: absolute;
-  right: 16px;
-  top: 18px;
-  background: #2ecc71;
-  color: #000;
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
+.icons {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 .hidden {
@@ -38,20 +52,18 @@ body {
 
 .categories {
   display: flex;
-  gap: 10px;
-  padding: 0 16px 16px;
-  overflow-x: auto;
+  gap: 8px;
+  margin: 16px 0;
 }
 
-.category {
+.cat {
   padding: 8px 14px;
   border-radius: 20px;
-  background: #1b2128;
-  cursor: pointer;
-  white-space: nowrap;
+  background: rgba(255,255,255,0.08);
+  font-size: 14px;
 }
 
-.category.active {
+.cat.active {
   background: #2ecc71;
   color: #000;
 }
@@ -60,52 +72,50 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  padding: 0 16px 80px;
 }
 
 .card {
-  background: #1b2128;
-  border-radius: 16px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
   padding: 14px;
-  position: relative;
-  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
 }
 
-.card h3 {
-  font-size: 15px;
-  margin-bottom: 6px;
-}
-
-.card .meta {
-  font-size: 13px;
-  opacity: 0.7;
+.card-header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .heart {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 18px;
+  opacity: .5;
 }
 
-.screen {
-  padding: 16px;
+.heart.active {
+  opacity: 1;
 }
 
-.button {
+.price {
+  opacity: .7;
+  margin: 6px 0 12px;
+}
+
+.btn {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   border-radius: 14px;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
   border: none;
-  background: #2ecc71;
-  color: #000;
-  font-size: 16px;
-  font-weight: 700;
-  margin-top: 16px;
+  font-weight: 600;
 }
 
-.back {
-  margin-bottom: 16px;
-  opacity: 0.7;
-  cursor: pointer;
+.bottom-buy {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  font-weight: 700;
 }
