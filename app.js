@@ -6,36 +6,45 @@ const app = document.getElementById("app");
 const bottom = document.getElementById("bottom-bar");
 const bottomIndicator = document.getElementById("bottom-indicator");
 
+/* ---------- STATE ---------- */
 const state = {
   tab: "shop",
   category: "all",
   cart: [],
   favorites: [],
-  filters: { maxPrice:null, size:null, condition:null }
 };
 
+/* ---------- DATA ---------- */
 const products = [
-  {id:1,name:"Nike Hoodie",price:6500,size:"XXS-XXL",condition:"used",category:"hoodie"},
-  {id:2,name:"Calvin Klein Jacket",price:10000,size:"XXS-XXL",condition:"new",category:"jacket"},
-  {id:3,name:"Nike Jordan 1",price:6500,size:"36-46",condition:"used",category:"shoes"},
-  {id:4,name:"Leather Belt",price:2500,size:"M",condition:"new",category:"belt"}
+  {id:1,name:"Nike Hoodie",price:6500,size:"XXS-XXL",category:"hoodie"},
+  {id:2,name:"Calvin Klein Jacket",price:10000,size:"XXS-XXL",category:"jacket"},
+  {id:3,name:"Nike Jordan 1",price:6500,size:"36-46",category:"shoes"},
+  {id:4,name:"Leather Belt",price:2500,size:"M",category:"belt"}
 ];
 
+const categories = [
+  {id:"all",label:"Все"},
+  {id:"hoodie",label:"Кофты"},
+  {id:"jacket",label:"Куртки"},
+  {id:"shoes",label:"Обувь"},
+  {id:"belt",label:"Ремни"},
+];
+
+/* ---------- RENDER ---------- */
 function render() {
   if (state.tab === "shop") renderShop();
-  if (state.tab === "favorites") renderList("❤️ Избранное", state.favorites);
-  if (state.tab === "cart") renderList("🛒 Корзина", state.cart);
+  if (state.tab === "favorites") renderFavorites();
+  if (state.tab === "cart") renderCart();
+  if (state.tab === "game") renderGame();
+  if (state.tab === "profile") renderProfile();
   updateCounts();
 }
 
+/* ---------- SHOP ---------- */
 function renderShop() {
-  const filtered = products.filter(p => {
-    if (state.category !== "all" && p.category !== state.category) return false;
-    if (state.filters.maxPrice && p.price > state.filters.maxPrice) return false;
-    if (state.filters.size && p.size !== state.filters.size) return false;
-    if (state.filters.condition && p.condition !== state.filters.condition) return false;
-    return true;
-  });
+  const filtered = products.filter(p =>
+    state.category === "all" || p.category === state.category
+  );
 
   app.innerHTML = `
     <h1>🍉 Арбуз Маркет</h1>
@@ -44,51 +53,81 @@ function renderShop() {
     <div class="tabs-wrapper glass">
       <div class="tab-indicator" id="tab-indicator"></div>
       <div class="tabs">
-        ${["all","hoodie","jacket","shoes","belt"].map(c=>`
-          <button class="${state.category===c?"active":""}"
-            onclick="setCategory('${c}')">
-            ${label(c)}
-          </button>`).join("")}
+        ${categories.map(c=>`
+          <button
+            class="${state.category===c.id?"active":""}"
+            onclick="setCategory('${c.id}')">
+            ${c.label}
+          </button>
+        `).join("")}
       </div>
     </div>
 
-    <div class="filters">
-      <input type="number" placeholder="Бюджет ₽"
-        onchange="state.filters.maxPrice=this.value||null;render()">
-      <select onchange="state.filters.size=this.value||null;render()">
-        <option value="">Размер</option>
-        <option>36-46</option>
-        <option>XXS-XXL</option>
-      </select>
-      <select onchange="state.filters.condition=this.value||null;render()">
-        <option value="">Состояние</option>
-        <option>new</option>
-        <option>used</option>
-      </select>
-    </div>
-
-    ${filtered.map(p=>`
-      <div class="card glass">
-        <div class="heart ${state.favorites.includes(p.id)?"active":""}"
-          onclick="toggleFav(${p.id})">❤️</div>
-        <h3>${p.name}</h3>
-        <div class="price">₽ ${p.price} · ${p.size}</div>
-        <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
-      </div>
-    `).join("") || "<p>Ничего не найдено</p>"}
+    ${filtered.map(p=>renderCard(p,true)).join("") || "<p>Пусто</p>"}
   `;
 
-  moveTabIndicator();
+  moveCategoryIndicator();
 }
 
+/* ---------- CARDS ---------- */
+function renderCard(p, showFav=true) {
+  return `
+    <div class="card glass">
+      ${showFav ? `
+        <div class="heart ${state.favorites.includes(p.id)?"active":""}"
+          onclick="toggleFav(${p.id})">❤️</div>` : ""
+      }
+      <h3>${p.name}</h3>
+      <div class="price">₽ ${p.price} · ${p.size}</div>
+      <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
+    </div>
+  `;
+}
+
+/* ---------- FAVORITES ---------- */
+function renderFavorites() {
+  app.innerHTML = `
+    <h2>❤️ Избранное</h2>
+    ${state.favorites.length
+      ? state.favorites.map(id =>
+          renderCard(products.find(p=>p.id===id),false)
+        ).join("")
+      : "<p>Пусто</p>"
+    }
+  `;
+}
+
+/* ---------- CART ---------- */
+function renderCart() {
+  const items = state.cart.map(id => products.find(p=>p.id===id));
+  const total = items.reduce((s,p)=>s+p.price,0);
+
+  app.innerHTML = `
+    <h2>🛒 Корзина</h2>
+    ${items.length
+      ? items.map(p=>`
+          <p>${p.name} — ₽${p.price}</p>
+        `).join("") +
+        `<h3>Итого: ₽${total}</h3>
+         <button class="btn" onclick="checkout()">Купить</button>`
+      : "<p>Корзина пуста</p>"
+    }
+  `;
+}
+
+/* ---------- OTHER TABS ---------- */
+function renderGame() {
+  app.innerHTML = `<h2>🎮 Игра</h2><p>Скоро арбузы 🍉</p>`;
+}
+
+function renderProfile() {
+  app.innerHTML = `<h2>👤 Профиль</h2><p>История заказов скоро</p>`;
+}
+
+/* ---------- ACTIONS ---------- */
 function setCategory(c){
-  state.category=c;
+  state.category = c;
   render();
-}
-
-function moveTabIndicator(){
-  const i = ["all","hoodie","jacket","shoes","belt"].indexOf(state.category);
-  document.getElementById("tab-indicator").style.transform=`translateX(${i*100}%)`;
 }
 
 function toggleFav(id){
@@ -103,35 +142,41 @@ function addToCart(id){
   render();
 }
 
-function renderList(title, list){
-  app.innerHTML = `<h2>${title}</h2>` +
-    (list.length
-      ? list.map(id=>`<p>${products.find(p=>p.id===id).name}</p>`).join("")
-      : "<p>Пусто</p>");
+function checkout(){
+  alert("Дальше оформляем заказ 🔥");
 }
 
-function updateCounts(){
-  document.querySelectorAll(".count").forEach(e=>e.remove());
-  addCount(1, state.favorites.length);
-  addCount(3, state.cart.length);
+/* ---------- INDICATORS ---------- */
+function moveCategoryIndicator(){
+  const i = categories.findIndex(c=>c.id===state.category);
+  document.getElementById("tab-indicator")
+    .style.transform = `translateX(${i*100}%)`;
 }
 
-function addCount(index, value){
-  if (!value) return;
-  const btn = bottom.children[index];
-  btn.innerHTML += `<span class="count">${value}</span>`;
-}
-
-function label(c){
-  return {all:"Все",hoodie:"Кофты",jacket:"Куртки",shoes:"Обувь",belt:"Ремни"}[c];
-}
-
-bottom.querySelectorAll("button").forEach((b,i)=>{
-  b.onclick=()=>{
-    state.tab=b.dataset.tab;
-    bottomIndicator.style.transform=`translateX(${i*100}%)`;
+/* ---------- BOTTOM ---------- */
+bottom.querySelectorAll("button").forEach((btn,i)=>{
+  btn.onclick = ()=>{
+    state.tab = btn.dataset.tab;
+    bottomIndicator.style.transform = `translateX(${i*100}%)`;
     render();
   };
 });
+
+/* ---------- COUNTS ---------- */
+function updateCounts(){
+  document.querySelectorAll(".count").forEach(e=>e.remove());
+
+  if (state.favorites.length)
+    addCount("favorites", state.favorites.length);
+
+  if (state.cart.length)
+    addCount("cart", state.cart.length);
+}
+
+function addCount(tab,value){
+  const btn = [...bottom.children]
+    .find(b=>b.dataset.tab===tab);
+  btn.innerHTML += `<span class="count">${value}</span>`;
+}
 
 render();
