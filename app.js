@@ -1,60 +1,75 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const productsDiv = document.getElementById("products");
+const categories = ["Все", "Кофты", "Куртки", "Обувь", "Ремни"];
 
-// ТЕСТОВЫЕ ТОВАРЫ (чтобы экран не был пустым)
-const products = [
-  {
-    title: "Nike Jordan 1",
-    price: "6500 ₽",
-    size: "43",
-    category: "Обувь"
-  },
-  {
-    title: "Calvin Klein Куртка",
-    price: "10000 ₽",
-    size: "L",
-    category: "Верхняя одежда"
-  }
+const productsData = [
+  { id: 1, name: "Nike Hoodie", price: 6500, size: "L", category: "Кофты" },
+  { id: 2, name: "Calvin Klein Jacket", price: 10000, size: "L", category: "Куртки" },
+  { id: 3, name: "Nike Jordan 1", price: 6500, size: "43", category: "Обувь" },
+  { id: 4, name: "Leather Belt", price: 2500, size: "M", category: "Ремни" },
 ];
 
-let cart = [];
+let currentCategory = "Все";
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-function render() {
-  productsDiv.innerHTML = "";
+const categoriesEl = document.getElementById("categories");
+const productsEl = document.getElementById("products");
 
-  products.forEach((p, i) => {
-    const div = document.createElement("div");
-    div.className = "product";
-    div.innerHTML = `
-      <b>${p.title}</b><br>
-      💰 ${p.price}<br>
-      📏 ${p.size}<br>
-      <button onclick="add(${i})">В корзину</button>
-    `;
-    productsDiv.appendChild(div);
+function renderCategories() {
+  categoriesEl.innerHTML = "";
+  categories.forEach(cat => {
+    const el = document.createElement("div");
+    el.className = "category" + (cat === currentCategory ? " active" : "");
+    el.innerText = cat;
+    el.onclick = () => {
+      currentCategory = cat;
+      renderCategories();
+      renderProducts();
+    };
+    categoriesEl.appendChild(el);
   });
 }
 
-function add(index) {
-  cart.push(products[index]);
-  tg.showAlert("Добавлено в корзину");
+function renderProducts() {
+  productsEl.innerHTML = "";
+  productsData
+    .filter(p => currentCategory === "Все" || p.category === currentCategory)
+    .forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3>${p.name}</h3>
+        <div class="meta">₽ ${p.price} · ${p.size}</div>
+        <button onclick="addToCart(${p.id})">В корзину</button>
+      `;
+      productsEl.appendChild(card);
+    });
 }
 
-document.getElementById("checkout").onclick = () => {
+function addToCart(id) {
+  const item = productsData.find(p => p.id === id);
+  cart.push(item);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  tg.showPopup({ message: "Добавлено в корзину 🍉" });
+}
+
+function openCart() {
   if (!cart.length) {
-    tg.showAlert("Корзина пустая");
+    tg.showPopup({ message: "Корзина пуста" });
     return;
   }
 
-  const text =
-    "Хочу купить:\n" +
-    cart.map(p => `${p.title} – ${p.price}`).join("\n");
+  const text = cart
+    .map(p => `${p.name} — ${p.price}₽ (${p.size})`)
+    .join("\n");
 
-  tg.openTelegramLink(
-    `https://t.me/arbuzshmot?text=${encodeURIComponent(text)}`
+  const msg = encodeURIComponent(
+    `Хочу купить:\n${text}\n\nИтого: ${cart.reduce((s,p)=>s+p.price,0)}₽`
   );
-};
 
-render();
+  tg.openTelegramLink(`https://t.me/arbu zshmot_bot?text=${msg}`);
+}
+
+renderCategories();
+renderProducts();
