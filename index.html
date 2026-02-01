@@ -1,19 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Арбуз Маркет</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Арбуз Маркет</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-<h2>🍉 Арбуз Маркет</h2>
+  <header class="header">
+    <h1>🍉 Арбуз Маркет</h1>
+    <span class="subtitle">resale · street · clean</span>
+  </header>
 
-<div id="products"></div>
+  <nav class="categories" id="categories"></nav>
 
-<button id="checkout">🛒 Купить</button>
+  <main class="products" id="products"></main>
 
-<script src="app.js"></script>
+  <footer class="footer">
+    <button class="buy-btn" onclick="openCart()">🛒 Купить</button>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
