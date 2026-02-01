@@ -1,56 +1,37 @@
+:root {
+  --bg: #0b0f13;
+  --card: #151c1f;
+  --green: #2ecc71;
+  --muted: #8a8f98;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  background: radial-gradient(circle at top, #1e2f2a, #0b0f13);
-  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
+  background: radial-gradient(circle at top, #1e2f2a, var(--bg));
+  color: white;
 }
 
 #app {
-  padding: 16px;
+  padding: 16px 16px 90px;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title {
+.header h1 {
+  margin: 0;
   font-size: 26px;
-  font-weight: 700;
 }
 
 .subtitle {
-  opacity: .6;
+  color: var(--muted);
   font-size: 13px;
 }
 
-.icons {
-  display: flex;
-  gap: 10px;
-}
-
-.icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(14px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.hidden {
-  display: none;
-}
-
 .categories {
+  position: relative;
   display: flex;
   gap: 8px;
   margin: 16px 0;
@@ -59,13 +40,23 @@ body {
 .cat {
   padding: 8px 14px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.08);
+  background: #111;
   font-size: 14px;
+  position: relative;
+  z-index: 2;
 }
 
 .cat.active {
-  background: #2ecc71;
-  color: #000;
+  color: black;
+}
+
+.liquid {
+  position: absolute;
+  height: 36px;
+  background: var(--green);
+  border-radius: 20px;
+  transition: .35s cubic-bezier(.4,1.4,.4,1);
+  z-index: 1;
 }
 
 .grid {
@@ -75,20 +66,18 @@ body {
 }
 
 .card {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(16px);
-  border-radius: 20px;
+  background: var(--card);
+  border-radius: 18px;
   padding: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.3);
 }
 
-.card-header {
+.card-top {
   display: flex;
   justify-content: space-between;
 }
 
 .heart {
-  opacity: .5;
+  opacity: .4;
 }
 
 .heart.active {
@@ -96,26 +85,38 @@ body {
 }
 
 .price {
-  opacity: .7;
+  color: var(--muted);
   margin: 6px 0 12px;
 }
 
 .btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
   border: none;
+  background: var(--green);
   font-weight: 600;
 }
 
-.bottom-buy {
+/* bottom bar */
+
+#bottom-bar {
   position: fixed;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
-  padding: 16px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-  font-weight: 700;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0e1418;
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  border-top: 1px solid #1f2a30;
+}
+
+.tab {
+  font-size: 20px;
+  opacity: .4;
+}
+
+.tab.active {
+  opacity: 1;
 }
