@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>ARBuz Store</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARBUZ STORE</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-<div id="app"></div>
-<div id="bottom-bar"></div>
+  <div id="app"></div>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="app.js"></script>
+  <nav id="bottom-bar">
+    <button data-tab="favorites">❤️</button>
+    <button data-tab="game">🎮</button>
+    <button data-tab="cart">🛒</button>
+    <button data-tab="profile">👤</button>
+  </nav>
 
+  <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -1,12 +1,60 @@
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
-  background: #0b0f13;
-  color: white;
+  background: #0b0f14;
+  color: #fff;
 }
 
 #app {
   padding: 16px;
+  padding-bottom: 80px;
+}
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+}
+
+.price {
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #32d26c;
+  font-weight: 600;
+}
+
+.heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.heart.active {
+  opacity: 1;
 }
 
 #bottom-bar {
@@ -14,8 +62,16 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #111;
+  height: 60px;
+  background: rgba(20,20,20,0.9);
   display: flex;
   justify-content: space-around;
-  padding: 12px 0;
+  align-items: center;
+}
+
+#bottom-bar button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 22px;
 }
