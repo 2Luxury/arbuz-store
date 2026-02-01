@@ -1,116 +1,21 @@
-html, body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-}
-
 body {
+  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
-  background: radial-gradient(circle at top, #1f3a32, #0b0f13);
-  color: #fff;
+  background: #0b0f13;
+  color: white;
 }
 
 #app {
-  min-height: 100vh;
-  padding: 16px 16px 96px;
+  padding: 16px;
 }
-
-.header h1 {
-  margin: 0;
-  font-size: 26px;
-}
-
-.subtitle {
-  font-size: 13px;
-  opacity: .6;
-}
-
-.categories {
-  position: relative;
-  display: flex;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.cat {
-  padding: 8px 14px;
-  border-radius: 20px;
-  background: rgba(255,255,255,.08);
-  z-index: 2;
-  font-size: 14px;
-}
-
-.cat.active {
-  color: #000;
-}
-
-.liquid {
-  position: absolute;
-  height: 36px;
-  background: #2ecc71;
-  border-radius: 20px;
-  transition: .35s cubic-bezier(.4,1.4,.4,1);
-  z-index: 1;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.card {
-  background: rgba(255,255,255,.08);
-  border-radius: 18px;
-  padding: 14px;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-}
-
-.heart {
-  opacity: .4;
-}
-
-.heart.active {
-  opacity: 1;
-}
-
-.price {
-  opacity: .7;
-  margin: 6px 0 12px;
-}
-
-.btn {
-  width: 100%;
-  padding: 10px;
-  border-radius: 14px;
-  border: none;
-  background: #2ecc71;
-  font-weight: 600;
-}
-
-/* bottom menu */
 
 #bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(10,14,18,.9);
-  border-top: 1px solid rgba(255,255,255,.06);
+  background: #111;
   display: flex;
   justify-content: space-around;
   padding: 12px 0;
-}
-
-.tab {
-  font-size: 20px;
-  opacity: .4;
-}
-
-.tab.active {
-  opacity: 1;
 }
