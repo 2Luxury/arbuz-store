@@ -15,14 +15,14 @@ const state = {
   watermelons: Number(localStorage.getItem("watermelons")||0)
 };
 
-function save() {
+function save(){
   localStorage.setItem("tab",state.tab);
   localStorage.setItem("cart",JSON.stringify(state.cart));
   localStorage.setItem("fav",JSON.stringify(state.fav));
   localStorage.setItem("watermelons",state.watermelons);
 }
 
-/* nav */
+/* NAV */
 bottom.querySelectorAll("button").forEach((b,i)=>{
   b.onclick=()=>{
     state.tab=b.dataset.tab;
@@ -31,7 +31,7 @@ bottom.querySelectorAll("button").forEach((b,i)=>{
   };
 });
 
-/* actions */
+/* ACTIONS */
 function addToCart(id){
   if(state.cart.includes(id)) return;
   state.cart.push(id); save(); render();
@@ -46,10 +46,12 @@ function toggleFav(id){
   save(); render();
 }
 
-/* render */
+/* RENDER */
 function render(){
   document.getElementById("cart-count").textContent=state.cart.length||"";
   document.getElementById("fav-count").textContent=state.fav.length||"";
+
+  if(state.tab!=="game") stopGame();
 
   if(state.tab==="shop") renderShop();
   if(state.tab==="fav") renderFav();
@@ -58,11 +60,9 @@ function render(){
   if(state.tab==="profile") renderProfile();
 }
 
-/* views */
 function renderShop(){
-  app.innerHTML=`
-    <h1>🍉 Арбуз Маркет</h1>
-    ${products.map(p=>`
+  app.innerHTML=`<h1>🍉 Арбуз Маркет</h1>`+
+    products.map(p=>`
       <div class="card">
         <button class="heart" onclick="toggleFav(${p.id})">
           ${state.fav.includes(p.id)?"❤️":"🤍"}
@@ -73,12 +73,11 @@ function renderShop(){
           ${state.cart.includes(p.id)?"В корзине":"В корзину"}
         </button>
       </div>
-    `).join("")}
-  `;
+    `).join("");
 }
 
 function renderFav(){
-  app.innerHTML=`<h2>❤️ Избранное</h2>`+
+  app.innerHTML="<h2>❤️ Избранное</h2>"+
     (state.fav.length
       ? state.fav.map(id=>{
           const p=products.find(x=>x.id===id);
@@ -91,7 +90,7 @@ function renderFav(){
 
 function renderCart(){
   let sum=0;
-  app.innerHTML=`<h2>🛒 Корзина</h2>`+
+  app.innerHTML="<h2>🛒 Корзина</h2>"+
     (state.cart.length
       ? state.cart.map(id=>{
           const p=products.find(x=>x.id===id);
@@ -101,11 +100,7 @@ function renderCart(){
           </div>`;
         }).join("")
       : "<p>Корзина пуста</p>")+
-    (state.cart.length
-      ? `<h3>Итого: ₽${sum}</h3>
-         <label><input type="checkbox" id="use-melon"> Использовать арбузики (${state.watermelons})</label>
-         <br><button class="btn">Купить</button>`
-      : "");
+    (state.cart.length?`<h3>Итого: ₽${sum}</h3>`:"");
 }
 
 function renderProfile(){
@@ -116,29 +111,37 @@ function renderProfile(){
   `;
 }
 
-/* 🎮 GAME */
-let gameInterval;
+/* GAME */
+let gameInterval=null;
+
 function renderGame(){
   app.innerHTML=`
     <h2>🎮 Лови арбузики</h2>
-    <p>Баланс: 🍉 ${state.watermelons}</p>
-    <div id="game-area"></div>
+    <p id="melon-balance">Баланс: 🍉 ${state.watermelons}</p>
+    <div id="game-area">
+      <div id="basket">🛒 Air Force · Jordan 4 · Raf</div>
+    </div>
   `;
+  startGame();
+}
+
+function startGame(){
+  stopGame();
   const area=document.getElementById("game-area");
-  clearInterval(gameInterval);
+  const balance=document.getElementById("melon-balance");
 
   gameInterval=setInterval(()=>{
     const slice=document.createElement("div");
     const rotten=Math.random()<0.2;
     slice.className="slice"+(rotten?" rotten":"");
     slice.textContent=rotten?"☠️":"🍉";
-    slice.style.left=Math.random()*(area.clientWidth-44)+"px";
+    slice.style.left=Math.random()*(area.clientWidth-40)+"px";
     slice.style.top="-50px";
     area.appendChild(slice);
 
     let y=-50;
     const fall=setInterval(()=>{
-      y+=2.5;
+      y+=2.4;
       slice.style.top=y+"px";
       if(y>area.clientHeight){
         clearInterval(fall);
@@ -152,17 +155,21 @@ function renderGame(){
       const delta=rotten?-5:1;
       state.watermelons=Math.max(0,state.watermelons+delta);
       save();
-      renderGame();
+      balance.textContent=`Баланс: 🍉 ${state.watermelons}`;
       const fx=document.createElement("div");
-      fx.className="float";
+      fx.className="fx";
+      fx.textContent=delta>0?"+1":"-5";
       fx.style.left=slice.style.left;
       fx.style.top=y+"px";
-      fx.textContent=delta>0?"+1":"-5";
       fx.style.color=delta>0?"#3ddc84":"#f44";
       area.appendChild(fx);
       setTimeout(()=>fx.remove(),600);
     };
-  },800);
+  },900);
+}
+
+function stopGame(){
+  if(gameInterval){ clearInterval(gameInterval); gameInterval=null; }
 }
 
 render();
