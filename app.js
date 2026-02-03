@@ -1,184 +1,299 @@
+// --- ДАННЫЕ (С ОПИСАНИЕМ И LEGT CHECK) ---
 const products = [
-    { id: 1, name: "Nike Hoodie", price: 6500, category: "Кофты", size: "XXS–XXL", desc: "Premium cotton hoodie. Legit Check: Passed.", tag: "Легит чек" },
-    { id: 2, name: "CK Jacket", price: 10000, category: "Куртки", size: "M-XL", desc: "Waterproof winter jacket. Authenticity guaranteed.", tag: "Легит чек" },
-    { id: 3, name: "Nike Jordan", price: 18500, category: "Обувь", size: "36–46", desc: "Classic Jordan 1 Retro. Certified authentic.", tag: "Легит чек" },
-    { id: 4, name: "Leather Belt", price: 2500, category: "Ремни", size: "M", desc: "Genuine leather belt with steel buckle.", tag: "Легит чек" }
+    { id: 1, name: "Nike Hoodie", price: 6500, category: "Кофты", size: "XXS–XXL", desc: "Плотный хлопок. Оригинальная фурнитура.", legit: "Legit Check: Passed ✅" },
+    { id: 2, name: "CK Jacket", price: 10000, category: "Куртки", size: "M-XL", desc: "Водоотталкивающее покрытие. Сезон: Осень/Зима.", legit: "Legit Check: Passed ✅" },
+    { id: 3, name: "Jordan 1 Retro", price: 18500, category: "Обувь", size: "36–46", desc: "Классическая расцветка. Натуральная кожа.", legit: "Legit Check: Passed ✅" },
+    { id: 4, name: "Leather Belt", price: 2500, category: "Ремни", size: "Universal", desc: "Натуральная кожа, стальная пряжка.", legit: "Legit Check: Passed ✅" }
 ];
 
-// Читаем данные из памяти правильно, чтобы не было фантомных товаров
+const categories = ["Кофты", "Куртки", "Обувь", "Ремни"];
+
+// --- STATE & INIT ---
 let state = {
-    cart: JSON.parse(localStorage.getItem('arb_cart') || '[]'),
-    fav: JSON.parse(localStorage.getItem('arb_fav') || '[]')
+    cart: [],
+    favorites: []
 };
 
 const tg = window.Telegram.WebApp;
 
-function init() {
+document.addEventListener('DOMContentLoaded', () => {
     tg.expand();
-    renderCategories();
-    renderProducts("Кофты");
-    updateBadges();
-    setupNav();
     
-    // Показываем имя пользователя из ТГ если оно есть
+    // Безопасная загрузка (фикс бага с 20 товарами)
+    try {
+        const savedCart = JSON.parse(localStorage.getItem('arbuz_cart'));
+        const savedFav = JSON.parse(localStorage.getItem('arbuz_fav'));
+        if (Array.isArray(savedCart)) state.cart = [...new Set(savedCart)]; // Убираем дубли
+        if (Array.isArray(savedFav)) state.favorites = [...new Set(savedFav)];
+    } catch (e) {
+        console.log('Ошибка памяти, сброс');
+        localStorage.clear();
+    }
+
+    // Данные пользователя
     if (tg.initDataUnsafe?.user) {
         document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
     }
+
+    renderCategories();
+    renderProducts(categories[0]);
+    updateCounters();
+    initNavigation();
+});
+
+// --- CORE LOGIC ---
+function saveState() {
+    localStorage.setItem('arbuz_cart', JSON.stringify(state.cart));
+    localStorage.setItem('arbuz_fav', JSON.stringify(state.favorites));
+    updateCounters();
+}
+
+function addToCart(id) {
+    if (!state.cart.includes(id)) {
+        state.cart.push(id);
+        saveState();
+        showFeedback('Добавлено в корзину');
+    }
+    updateUI();
+}
+
+function removeFromCart(id) {
+    state.cart = state.cart.filter(item => item !== id);
+    saveState();
+    updateUI();
+}
+
+function toggleFav(id) {
+    if (state.favorites.includes(id)) {
+        state.favorites = state.favorites.filter(item => item !== id);
+    } else {
+        state.favorites.push(id);
+    }
+    saveState();
+    updateUI();
+}
+
+// --- RENDERING ---
+function updateUI() {
+    // Обновляем текущую активную вкладку
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab.id === 'tab-cart') renderCart();
+    if (activeTab.id === 'tab-favorites') renderFavorites();
+    if (activeTab.id === 'tab-shop') {
+        const activeCatBtn = document.querySelector('.cat-btn.active');
+        if(activeCatBtn) renderProducts(activeCatBtn.innerText);
+    }
+    
+    // Если открыто модальное окно - обновляем его кнопку
+    const modal = document.getElementById('product-modal');
+    if (!modal.classList.contains('hidden')) {
+        const id = parseInt(modal.dataset.activeId);
+        if(id) openModal(id); // Перерисовываем содержимое
+    }
+}
+
+function updateCounters() {
+    const cBadge = document.getElementById('badge-cart');
+    const fBadge = document.getElementById('badge-fav');
+    
+    // Строгая проверка длины
+    const cartCount = state.cart.length;
+    const favCount = state.favorites.length;
+
+    cBadge.innerText = cartCount;
+    cBadge.classList.toggle('hidden', cartCount === 0);
+
+    fBadge.innerText = favCount;
+    fBadge.classList.toggle('hidden', favCount === 0);
 }
 
 function renderCategories() {
-    const cats = ["Кофты", "Куртки", "Обувь", "Ремни"];
-    const container = document.getElementById('categories-list');
-    container.innerHTML = '';
-    cats.forEach((c, i) => {
+    const list = document.getElementById('categories-list');
+    list.innerHTML = '';
+    categories.forEach((cat, idx) => {
         const btn = document.createElement('button');
-        btn.className = `cat-btn ${i===0?'active':''}`;
-        btn.innerText = c;
+        btn.className = `cat-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerText = cat;
         btn.onclick = () => {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            moveSlider('cat-slider', btn);
-            renderProducts(c);
+            moveSlider(document.getElementById('cat-slider'), btn);
+            renderProducts(cat);
         };
-        container.appendChild(btn);
+        list.appendChild(btn);
     });
-    setTimeout(() => moveSlider('cat-slider', container.firstChild), 100);
+    setTimeout(() => moveSlider(document.getElementById('cat-slider'), list.firstChild), 50);
 }
 
-function renderProducts(cat) {
+function renderProducts(category) {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
-    products.filter(p => p.category === cat).forEach(p => {
+    const filtered = products.filter(p => p.category === category);
+    
+    filtered.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card glass';
-        card.onclick = (e) => { if(!e.target.closest('button')) openModal(p.id) };
-        const isFav = state.fav.includes(p.id);
+        const isFav = state.favorites.includes(p.id);
+        
+        // Клик по карточке открывает модалку
+        card.onclick = (e) => {
+            if(!e.target.closest('.fav-btn')) openModal(p.id);
+        };
+
         card.innerHTML = `
-            <button class="fav-btn" onclick="event.stopPropagation(); toggleFav(${p.id})">${isFav?'❤️':'🤍'}</button>
-            <h3>${p.name}</h3>
-            <div class="price">${p.price} ₽</div>
+            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${p.id})">
+                ${isFav ? '❤️' : '🤍'}
+            </button>
+            <div class="card-img-placeholder">👟</div>
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <span class="price">${p.price.toLocaleString()} ₽</span>
+            </div>
         `;
         grid.appendChild(card);
     });
 }
 
+function renderFavorites() {
+    const grid = document.getElementById('favorites-grid');
+    const empty = document.getElementById('fav-empty');
+    grid.innerHTML = '';
+
+    if (state.favorites.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    state.favorites.forEach(id => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        
+        const card = document.createElement('div');
+        card.className = 'product-card glass';
+        const inCart = state.cart.includes(p.id);
+
+        card.innerHTML = `
+            <button class="fav-btn active" onclick="toggleFav(${p.id})">❤️</button>
+            <div class="card-img-placeholder">👟</div>
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <span class="price">${p.price.toLocaleString()} ₽</span>
+                <button class="action-btn ${inCart ? 'btn-outline' : 'btn-green'}" onclick="inCart ? removeFromCart(${p.id}) : addToCart(${p.id})">
+                    ${inCart ? 'В корзине' : 'В корзину'}
+                </button>
+            </div>
+        `;
+        // В избранном клик тоже открывает детали
+        card.onclick = (e) => {
+           if(!e.target.closest('button')) openModal(p.id);
+        };
+        grid.appendChild(card);
+    });
+}
+
+function renderCart() {
+    const list = document.getElementById('cart-list');
+    const empty = document.getElementById('cart-empty');
+    const totalEl = document.getElementById('total-price');
+    list.innerHTML = '';
+    
+    if (state.cart.length === 0) {
+        empty.classList.remove('hidden');
+        totalEl.innerText = '0 ₽';
+        return;
+    }
+    empty.classList.add('hidden');
+
+    let total = 0;
+    state.cart.forEach(id => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        total += p.price;
+
+        const item = document.createElement('div');
+        item.className = 'cart-item glass';
+        item.innerHTML = `
+            <div class="cart-img">👟</div>
+            <div class="cart-details">
+                <h4>${p.name}</h4>
+                <div style="font-size:12px; opacity:0.7">${p.size}</div>
+                <div style="font-weight:bold">${p.price.toLocaleString()} ₽</div>
+            </div>
+            <button class="cart-remove" onclick="removeFromCart(${p.id})">🗑️</button>
+        `;
+        list.appendChild(item);
+    });
+    totalEl.innerText = total.toLocaleString() + ' ₽';
+}
+
+// --- MODAL LOGIC ---
 function openModal(id) {
     const p = products.find(x => x.id === id);
-    const inCart = state.cart.includes(p.id);
+    const modal = document.getElementById('product-modal');
     const body = document.getElementById('modal-body');
+    const inCart = state.cart.includes(id);
+
+    modal.dataset.activeId = id; // Сохраняем ID для обновления
+    
     body.innerHTML = `
-        <div class="modal-info">
-            <span class="tag">${p.tag}</span>
-            <span class="tag">Размер: ${p.size}</span>
+        <div class="card-img-placeholder" style="aspect-ratio: 1/1; font-size: 50px;">👟</div>
+        <div class="modal-details">
             <h2>${p.name}</h2>
+            <span class="tag">${p.legit}</span>
+            <span class="tag">Размер: ${p.size}</span>
             <p>${p.desc}</p>
-            <div style="margin-top:15px"><span class="price" style="font-size: 20px; color: var(--accent)">${p.price} ₽</span></div>
-            <button class="btn-large" onclick="toggleCart(${p.id}); closeModal();">
-                ${inCart ? 'Удалить из корзины' : 'В корзину'}
+            <div style="font-size: 20px; font-weight: 700; margin-bottom: 15px;">${p.price.toLocaleString()} ₽</div>
+            
+            <button class="action-btn ${inCart ? 'btn-remove' : 'btn-green'}" onclick="${inCart ? `removeFromCart(${p.id})` : `addToCart(${p.id})`}">
+                ${inCart ? 'Удалить из корзины' : 'Добавить в корзину'}
             </button>
         </div>
     `;
-    document.getElementById('product-modal').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
-function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
-
-function toggleCart(id) {
-    const idx = state.cart.indexOf(id);
-    if (idx > -1) { state.cart.splice(idx, 1); } 
-    else { state.cart.push(id); }
-    save();
-    renderCurrentTab();
+function closeModal() {
+    document.getElementById('product-modal').classList.add('hidden');
 }
 
-function toggleFav(id) {
-    const idx = state.fav.indexOf(id);
-    if (idx > -1) { state.fav.splice(idx, 1); } 
-    else { state.fav.push(id); }
-    save();
-    renderCurrentTab();
-}
-
-function save() {
-    localStorage.setItem('arb_cart', JSON.stringify(state.cart));
-    localStorage.setItem('arb_fav', JSON.stringify(state.fav));
-    updateBadges();
-}
-
-function updateBadges() {
-    const bCart = document.getElementById('badge-cart');
-    const bFav = document.getElementById('badge-fav');
-    
-    bCart.innerText = state.cart.length;
-    bCart.classList.toggle('hidden', state.cart.length === 0);
-    
-    bFav.innerText = state.fav.length;
-    bFav.classList.toggle('hidden', state.fav.length === 0);
-}
-
-function setupNav() {
-    document.querySelectorAll('.nav-item').forEach(item => {
+// --- NAVIGATION & UTILS ---
+function initNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
         item.onclick = () => {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            moveSlider('nav-slider', item);
+            moveSlider(document.getElementById('nav-slider'), item);
+            
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(`tab-${item.dataset.target}`).classList.add('active');
-            renderCurrentTab();
+            
+            updateUI();
         };
     });
-    setTimeout(() => moveSlider('nav-slider', document.querySelector('.nav-item.active')), 50);
+    setTimeout(() => {
+        const active = document.querySelector('.nav-item.active');
+        if(active) moveSlider(document.getElementById('nav-slider'), active);
+    }, 100);
 }
 
-function renderCurrentTab() {
-    const active = document.querySelector('.tab-content.active').id;
-    
-    if (active === 'tab-cart') {
-        const list = document.getElementById('cart-list');
-        list.innerHTML = '';
-        let total = 0;
-        state.cart.forEach(id => {
-            const p = products.find(x => x.id === id);
-            if(p) {
-                total += p.price;
-                list.innerHTML += `<div class="cart-item glass">
-                    <div style="flex:1"><b>${p.name}</b><br><small style="color:var(--text-dim)">${p.price} ₽</small></div>
-                    <button class="fav-btn" style="position:static" onclick="toggleCart(${p.id})">🗑️</button>
-                </div>`;
-            }
-        });
-        document.getElementById('total-price').innerText = total + ' ₽';
-        document.getElementById('cart-empty').classList.toggle('hidden', state.cart.length > 0);
-    } 
-    else if (active === 'tab-favorites') {
-        const grid = document.getElementById('favorites-grid');
-        grid.innerHTML = '';
-        state.fav.forEach(id => {
-            const p = products.find(x => x.id === id);
-            if(p) {
-                const card = document.createElement('div');
-                card.className = 'product-card glass';
-                const inCart = state.cart.includes(p.id);
-                card.innerHTML = `
-                    <button class="fav-btn" onclick="toggleFav(${p.id})">❤️</button>
-                    <h3>${p.name}</h3>
-                    <div class="price">${p.price} ₽</div>
-                    <button class="btn-large" style="padding: 8px; font-size: 11px; margin-top: 5px;" onclick="toggleCart(${p.id})">
-                        ${inCart ? 'В корзине ✓' : 'В корзину'}
-                    </button>
-                `;
-                grid.appendChild(card);
-            }
-        });
-        document.getElementById('fav-empty').classList.toggle('hidden', state.fav.length > 0);
-    }
+function moveSlider(slider, el) {
+    if (!el || !slider) return;
+    // Корректировка позиции относительно родителя
+    slider.style.width = el.offsetWidth + 'px';
+    slider.style.left = el.offsetLeft + 'px';
 }
 
-function moveSlider(id, el) {
-    const s = document.getElementById(id);
-    if (!el) return;
-    s.style.width = el.offsetWidth + 'px';
-    s.style.left = el.offsetLeft + 'px';
+function showFeedback(msg) {
+    tg.HapticFeedback.notificationOccurred('success');
 }
 
-init();
+function checkout() {
+    if(state.cart.length === 0) return;
+    tg.showPopup({
+        title: 'Заказ',
+        message: `Сумма заказа: ${document.getElementById('total-price').innerText}`,
+        buttons: [{type: 'ok'}]
+    });
+}

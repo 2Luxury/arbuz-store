@@ -8,65 +8,94 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="app-background"></div>
 
-    <header class="header glass">
-        <h1>Арбуз Маркет</h1>
-    </header>
+    <div id="app">
+        
+        <header class="header glass">
+            <h1>Арбуз Маркет</h1>
+        </header>
 
-    <main id="main-content">
-        <section id="tab-shop" class="tab-content active">
-            <div class="categories-container glass">
-                <div class="category-slider" id="cat-slider"></div>
-                <div class="categories-list" id="categories-list"></div>
-            </div>
-            <div class="products-grid" id="products-grid"></div>
-        </section>
-
-        <section id="tab-favorites" class="tab-content">
-            <h2 class="section-title">Избранное</h2>
-            <div class="products-grid" id="favorites-grid"></div>
-            <div id="fav-empty" class="empty-state hidden">Пусто</div>
-        </section>
-
-        <section id="tab-cart" class="tab-content">
-            <h2 class="section-title">Корзина</h2>
-            <div class="cart-items" id="cart-list"></div>
-            <div id="cart-empty" class="empty-state hidden">Корзина пуста</div>
-            <div class="cart-footer glass">
-                <div class="cart-total">
-                    <span id="total-price">0 ₽</span>
+        <main id="main-content">
+            
+            <section id="tab-shop" class="tab-content active">
+                <div class="categories-container glass">
+                    <div class="category-slider" id="cat-slider"></div>
+                    <div class="categories-list" id="categories-list">
+                        </div>
                 </div>
-                <button class="buy-btn" onclick="alert('Заказ оформлен!')">Купить</button>
-            </div>
-        </section>
 
-        <section id="tab-profile" class="tab-content">
-            <div class="profile-card glass">
-                <div class="avatar-placeholder">👤</div>
-                <h3 id="user-name">Покупатель</h3>
-                <p class="profile-status">Premium Member</p>
-            </div>
-        </section>
-    </main>
+                <div class="products-grid" id="products-grid">
+                    </div>
+            </section>
 
-    <div id="product-modal" class="modal-overlay hidden">
-        <div class="modal-content glass">
-            <button class="close-modal" onclick="closeModal()">✕</button>
-            <div id="modal-body"></div>
+            <section id="tab-favorites" class="tab-content">
+                <h2 class="section-title">Избранное</h2>
+                <div class="products-grid" id="favorites-grid">
+                    </div>
+                <div id="fav-empty" class="empty-state hidden">Нет избранных товаров</div>
+            </section>
+
+            <section id="tab-cart" class="tab-content">
+                <h2 class="section-title">Корзина</h2>
+                <div class="cart-items" id="cart-list">
+                    </div>
+                <div id="cart-empty" class="empty-state hidden">Корзина пуста</div>
+
+                <div class="cart-footer glass">
+                    <div class="cart-total">
+                        <span>Итого:</span>
+                        <span id="total-price">0 ₽</span>
+                    </div>
+                    <button class="buy-btn" onclick="checkout()">Купить</button>
+                </div>
+            </section>
+
+            <section id="tab-profile" class="tab-content">
+                <div class="profile-card glass">
+                    <div class="avatar-placeholder">👤</div>
+                    <h3 id="user-name">Покупатель</h3>
+                    <p class="profile-status">Premium Member</p>
+                </div>
+            </section>
+
+        </main>
+
+        <div id="product-modal" class="modal-overlay hidden">
+            <div class="modal-content glass">
+                <button class="close-modal" onclick="closeModal()">✕</button>
+                <div id="modal-body">
+                    </div>
+            </div>
         </div>
+
+        <nav class="bottom-nav glass">
+            <div class="nav-slider" id="nav-slider"></div>
+            
+            <button class="nav-item active" data-target="shop">
+                <span class="icon">🍉</span>
+                <span class="label">Главная</span>
+            </button>
+            
+            <button class="nav-item" data-target="favorites">
+                <span class="icon">❤️</span>
+                <span class="label">Избр.</span>
+                <span class="badge hidden" id="badge-fav">0</span>
+            </button>
+            
+            <button class="nav-item" data-target="cart">
+                <span class="icon">🛒</span>
+                <span class="label">Корзина</span>
+                <span class="badge hidden" id="badge-cart">0</span>
+            </button>
+            
+            <button class="nav-item" data-target="profile">
+                <span class="icon">👤</span>
+                <span class="label">Профиль</span>
+            </button>
+        </nav>
+
     </div>
 
-    <nav class="bottom-nav glass">
-        <div class="nav-slider" id="nav-slider"></div>
-        <button class="nav-item active" data-target="shop">
-            <span class="icon">🍉</span>
-            <span class="label">Магазин</span>
-        </button>
-        <button class="nav-item" data-target="favorites">
-            <span class="icon">❤️</span>
-            <span class="label">Избранное</span>
-            <span id="badge-fav" class="badge hidden">0</span>
-        </button>
-        <button class="nav-item" data-target="cart">
-            <span class="icon">
+    <script src="app.js"></script>
+</body>
+</html>
