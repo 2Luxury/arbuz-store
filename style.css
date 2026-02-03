@@ -10,13 +10,33 @@ body {
 }
 
 #app {
-  padding: 20px 16px 90px;
+  padding: 20px 16px 100px;
 }
 
 h1, h2 {
   margin-top: 0;
 }
 
+/* categories */
+.categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.categories button {
+  flex: 1;
+  background: #14201b;
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  color: #aaa;
+}
+.categories button.active {
+  background: #3ddc84;
+  color: #012;
+}
+
+/* cards */
 .card {
   background: #141f1b;
   border-radius: 16px;
@@ -24,13 +44,21 @@ h1, h2 {
   margin-bottom: 12px;
   position: relative;
 }
-
 .price {
   opacity: .7;
   margin-bottom: 10px;
 }
+.heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 18px;
+}
 
-button {
+/* buttons */
+.btn {
   border: none;
   border-radius: 12px;
   padding: 10px 14px;
@@ -39,15 +67,8 @@ button {
   font-weight: 600;
 }
 
-.heart {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  font-size: 18px;
-}
-
-nav#bottom {
+/* bottom bar */
+#bottom {
   position: fixed;
   left: 0;
   right: 0;
@@ -58,8 +79,26 @@ nav#bottom {
   justify-content: space-around;
   align-items: center;
 }
-nav#bottom button {
+#bottom button {
   background: none;
+  border: none;
   color: #aaa;
   font-size: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+#bottom-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  height: 4px;
+  width: 20%;
+  background: #3ddc84;
+  transition: transform .25s ease;
+}
+
+.count {
+  font-size: 11px;
+  margin-left: 4px;
 }

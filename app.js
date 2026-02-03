@@ -1,26 +1,35 @@
 const app = document.getElementById("app");
+const bottom = document.getElementById("bottom");
+const bottomIndicator = document.getElementById("bottom-indicator");
 
 const products = [
-  {id:1, name:"Nike Hoodie", price:6500},
-  {id:2, name:"Calvin Klein Jacket", price:10000},
-  {id:3, name:"Nike Jordan 1", price:6500},
+  {id:1, name:"Nike Hoodie", price:6500, cat:"hoodie"},
+  {id:2, name:"Calvin Klein Jacket", price:10000, cat:"jacket"},
+  {id:3, name:"Nike Jordan 1", price:6500, cat:"shoes"},
 ];
 
 const state = {
   tab: "shop",
+  category: "all",
   cart: [],
   fav: []
 };
 
 /* ---------- NAV ---------- */
-function setTab(tab) {
-  state.tab = tab;
-  render();
-}
+bottom.querySelectorAll("button").forEach((btn, i) => {
+  btn.onclick = () => {
+    state.tab = btn.dataset.tab;
+    bottomIndicator.style.transform = `translateX(${i * 100}%)`;
+    render();
+  };
+});
 
 /* ---------- ACTIONS ---------- */
 function addToCart(id) {
-  if (state.cart.includes(id)) return;
+  if (state.cart.includes(id)) {
+    alert("Уже в корзине");
+    return;
+  }
   state.cart.push(id);
   render();
 }
@@ -37,25 +46,53 @@ function toggleFav(id) {
   render();
 }
 
+function setCategory(cat) {
+  state.category = cat;
+  render();
+}
+
 /* ---------- RENDER ---------- */
 function render() {
+  document.getElementById("cart-count").textContent =
+    state.cart.length || "";
+  document.getElementById("fav-count").textContent =
+    state.fav.length || "";
+
   if (state.tab === "shop") renderShop();
   if (state.tab === "fav") renderFav();
   if (state.tab === "cart") renderCart();
+  if (state.tab === "game") renderGame();
   if (state.tab === "profile") renderProfile();
 }
 
 function renderShop() {
+  const filtered =
+    state.category === "all"
+      ? products
+      : products.filter(p => p.cat === state.category);
+
   app.innerHTML = `
     <h1>🍉 Арбуз Маркет</h1>
-    ${products.map(p => `
+
+    <div class="categories">
+      <button class="${state.category==="all"?"active":""}"
+        onclick="setCategory('all')">Все</button>
+      <button class="${state.category==="hoodie"?"active":""}"
+        onclick="setCategory('hoodie')">Кофты</button>
+      <button class="${state.category==="jacket"?"active":""}"
+        onclick="setCategory('jacket')">Куртки</button>
+      <button class="${state.category==="shoes"?"active":""}"
+        onclick="setCategory('shoes')">Обувь</button>
+    </div>
+
+    ${filtered.map(p => `
       <div class="card">
         <button class="heart" onclick="toggleFav(${p.id})">
           ${state.fav.includes(p.id) ? "❤️" : "🤍"}
         </button>
         <h3>${p.name}</h3>
         <div class="price">₽ ${p.price}</div>
-        <button onclick="addToCart(${p.id})">
+        <button class="btn" onclick="addToCart(${p.id})">
           ${state.cart.includes(p.id) ? "В корзине" : "В корзину"}
         </button>
       </div>
@@ -86,9 +123,8 @@ function renderCart() {
           sum += p.price;
           return `
             <div class="card">
-              ${p.name} — ₽${p.price}
-              <br><br>
-              <button onclick="removeFromCart(${id})">Удалить</button>
+              ${p.name} — ₽${p.price}<br><br>
+              <button class="btn" onclick="removeFromCart(${id})">Удалить</button>
             </div>
           `;
         }).join("")
@@ -98,8 +134,18 @@ function renderCart() {
   `;
 }
 
+function renderGame() {
+  app.innerHTML = `
+    <h2>🎮 Игра</h2>
+    <p>Скоро мини-игра с арбузами 🍉</p>
+  `;
+}
+
 function renderProfile() {
-  app.innerHTML = `<h2>👤 Профиль</h2><p>Скоро</p>`;
+  app.innerHTML = `
+    <h2>👤 Профиль</h2>
+    <p>История заказов скоро</p>
+  `;
 }
 
 render();

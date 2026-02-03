@@ -11,10 +11,13 @@
 <div id="app"></div>
 
 <nav id="bottom">
-  <button onclick="setTab('shop')">🍉</button>
-  <button onclick="setTab('fav')">❤️</button>
-  <button onclick="setTab('cart')">🛒</button>
-  <button onclick="setTab('profile')">👤</button>
+  <div id="bottom-indicator"></div>
+
+  <button data-tab="shop">🍉</button>
+  <button data-tab="fav">❤️ <span class="count" id="fav-count"></span></button>
+  <button data-tab="game">🎮</button>
+  <button data-tab="cart">🛒 <span class="count" id="cart-count"></span></button>
+  <button data-tab="profile">👤</button>
 </nav>
 
 <script src="app.js"></script>
