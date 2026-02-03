@@ -1,151 +1,168 @@
 const app = document.getElementById("app");
 const bottom = document.getElementById("bottom");
-const bottomIndicator = document.getElementById("bottom-indicator");
+const indicator = document.getElementById("bottom-indicator");
 
 const products = [
-  {id:1, name:"Nike Hoodie", price:6500, cat:"hoodie"},
-  {id:2, name:"Calvin Klein Jacket", price:10000, cat:"jacket"},
-  {id:3, name:"Nike Jordan 1", price:6500, cat:"shoes"},
+  {id:1,name:"Air Force 1",price:12000},
+  {id:2,name:"Air Jordan 4",price:18000},
+  {id:3,name:"Raf Simons",price:25000},
 ];
 
 const state = {
-  tab: "shop",
-  category: "all",
-  cart: [],
-  fav: []
+  tab: localStorage.getItem("tab") || "shop",
+  cart: JSON.parse(localStorage.getItem("cart")||"[]"),
+  fav: JSON.parse(localStorage.getItem("fav")||"[]"),
+  watermelons: Number(localStorage.getItem("watermelons")||0)
 };
 
-/* ---------- NAV ---------- */
-bottom.querySelectorAll("button").forEach((btn, i) => {
-  btn.onclick = () => {
-    state.tab = btn.dataset.tab;
-    bottomIndicator.style.transform = `translateX(${i * 100}%)`;
-    render();
+function save() {
+  localStorage.setItem("tab",state.tab);
+  localStorage.setItem("cart",JSON.stringify(state.cart));
+  localStorage.setItem("fav",JSON.stringify(state.fav));
+  localStorage.setItem("watermelons",state.watermelons);
+}
+
+/* nav */
+bottom.querySelectorAll("button").forEach((b,i)=>{
+  b.onclick=()=>{
+    state.tab=b.dataset.tab;
+    indicator.style.transform=`translateX(${i*100}%)`;
+    save(); render();
   };
 });
 
-/* ---------- ACTIONS ---------- */
-function addToCart(id) {
-  if (state.cart.includes(id)) {
-    alert("Уже в корзине");
-    return;
-  }
-  state.cart.push(id);
-  render();
+/* actions */
+function addToCart(id){
+  if(state.cart.includes(id)) return;
+  state.cart.push(id); save(); render();
 }
-
-function removeFromCart(id) {
-  state.cart = state.cart.filter(x => x !== id);
-  render();
+function removeFromCart(id){
+  state.cart=state.cart.filter(x=>x!==id); save(); render();
 }
-
-function toggleFav(id) {
+function toggleFav(id){
   state.fav.includes(id)
-    ? state.fav = state.fav.filter(x => x !== id)
+    ? state.fav=state.fav.filter(x=>x!==id)
     : state.fav.push(id);
-  render();
+  save(); render();
 }
 
-function setCategory(cat) {
-  state.category = cat;
-  render();
+/* render */
+function render(){
+  document.getElementById("cart-count").textContent=state.cart.length||"";
+  document.getElementById("fav-count").textContent=state.fav.length||"";
+
+  if(state.tab==="shop") renderShop();
+  if(state.tab==="fav") renderFav();
+  if(state.tab==="cart") renderCart();
+  if(state.tab==="game") renderGame();
+  if(state.tab==="profile") renderProfile();
 }
 
-/* ---------- RENDER ---------- */
-function render() {
-  document.getElementById("cart-count").textContent =
-    state.cart.length || "";
-  document.getElementById("fav-count").textContent =
-    state.fav.length || "";
-
-  if (state.tab === "shop") renderShop();
-  if (state.tab === "fav") renderFav();
-  if (state.tab === "cart") renderCart();
-  if (state.tab === "game") renderGame();
-  if (state.tab === "profile") renderProfile();
-}
-
-function renderShop() {
-  const filtered =
-    state.category === "all"
-      ? products
-      : products.filter(p => p.cat === state.category);
-
-  app.innerHTML = `
+/* views */
+function renderShop(){
+  app.innerHTML=`
     <h1>🍉 Арбуз Маркет</h1>
-
-    <div class="categories">
-      <button class="${state.category==="all"?"active":""}"
-        onclick="setCategory('all')">Все</button>
-      <button class="${state.category==="hoodie"?"active":""}"
-        onclick="setCategory('hoodie')">Кофты</button>
-      <button class="${state.category==="jacket"?"active":""}"
-        onclick="setCategory('jacket')">Куртки</button>
-      <button class="${state.category==="shoes"?"active":""}"
-        onclick="setCategory('shoes')">Обувь</button>
-    </div>
-
-    ${filtered.map(p => `
+    ${products.map(p=>`
       <div class="card">
         <button class="heart" onclick="toggleFav(${p.id})">
-          ${state.fav.includes(p.id) ? "❤️" : "🤍"}
+          ${state.fav.includes(p.id)?"❤️":"🤍"}
         </button>
         <h3>${p.name}</h3>
         <div class="price">₽ ${p.price}</div>
         <button class="btn" onclick="addToCart(${p.id})">
-          ${state.cart.includes(p.id) ? "В корзине" : "В корзину"}
+          ${state.cart.includes(p.id)?"В корзине":"В корзину"}
         </button>
       </div>
     `).join("")}
   `;
 }
 
-function renderFav() {
-  app.innerHTML = `
-    <h2>❤️ Избранное</h2>
-    ${state.fav.length
-      ? state.fav.map(id => {
-          const p = products.find(x => x.id === id);
-          return `<div class="card">${p.name}</div>`;
+function renderFav(){
+  app.innerHTML=`<h2>❤️ Избранное</h2>`+
+    (state.fav.length
+      ? state.fav.map(id=>{
+          const p=products.find(x=>x.id===id);
+          return `<div class="card">${p.name}
+            <br><button class="btn" onclick="addToCart(${id})">В корзину</button>
+          </div>`;
         }).join("")
-      : "<p>Пусто</p>"
-    }
-  `;
+      : "<p>Пусто</p>");
 }
 
-function renderCart() {
-  let sum = 0;
-  app.innerHTML = `
-    <h2>🛒 Корзина</h2>
-    ${state.cart.length
-      ? state.cart.map(id => {
-          const p = products.find(x => x.id === id);
-          sum += p.price;
-          return `
-            <div class="card">
-              ${p.name} — ₽${p.price}<br><br>
-              <button class="btn" onclick="removeFromCart(${id})">Удалить</button>
-            </div>
-          `;
+function renderCart(){
+  let sum=0;
+  app.innerHTML=`<h2>🛒 Корзина</h2>`+
+    (state.cart.length
+      ? state.cart.map(id=>{
+          const p=products.find(x=>x.id===id);
+          sum+=p.price;
+          return `<div class="card">${p.name} — ₽${p.price}
+            <br><button class="btn" onclick="removeFromCart(${id})">Удалить</button>
+          </div>`;
         }).join("")
-      : "<p>Корзина пуста</p>"
-    }
-    ${state.cart.length ? `<h3>Итого: ₽${sum}</h3>` : ""}
-  `;
+      : "<p>Корзина пуста</p>")+
+    (state.cart.length
+      ? `<h3>Итого: ₽${sum}</h3>
+         <label><input type="checkbox" id="use-melon"> Использовать арбузики (${state.watermelons})</label>
+         <br><button class="btn">Купить</button>`
+      : "");
 }
 
-function renderGame() {
-  app.innerHTML = `
-    <h2>🎮 Игра</h2>
-    <p>Скоро мини-игра с арбузами 🍉</p>
-  `;
-}
-
-function renderProfile() {
-  app.innerHTML = `
+function renderProfile(){
+  app.innerHTML=`
     <h2>👤 Профиль</h2>
-    <p>История заказов скоро</p>
+    <p>🍉 Баланс: ${state.watermelons}</p>
+    <p>100 🍉 = 1% скидки</p>
   `;
+}
+
+/* 🎮 GAME */
+let gameInterval;
+function renderGame(){
+  app.innerHTML=`
+    <h2>🎮 Лови арбузики</h2>
+    <p>Баланс: 🍉 ${state.watermelons}</p>
+    <div id="game-area"></div>
+  `;
+  const area=document.getElementById("game-area");
+  clearInterval(gameInterval);
+
+  gameInterval=setInterval(()=>{
+    const slice=document.createElement("div");
+    const rotten=Math.random()<0.2;
+    slice.className="slice"+(rotten?" rotten":"");
+    slice.textContent=rotten?"☠️":"🍉";
+    slice.style.left=Math.random()*(area.clientWidth-44)+"px";
+    slice.style.top="-50px";
+    area.appendChild(slice);
+
+    let y=-50;
+    const fall=setInterval(()=>{
+      y+=2.5;
+      slice.style.top=y+"px";
+      if(y>area.clientHeight){
+        clearInterval(fall);
+        slice.remove();
+      }
+    },16);
+
+    slice.onclick=()=>{
+      clearInterval(fall);
+      slice.remove();
+      const delta=rotten?-5:1;
+      state.watermelons=Math.max(0,state.watermelons+delta);
+      save();
+      renderGame();
+      const fx=document.createElement("div");
+      fx.className="float";
+      fx.style.left=slice.style.left;
+      fx.style.top=y+"px";
+      fx.textContent=delta>0?"+1":"-5";
+      fx.style.color=delta>0?"#3ddc84":"#f44";
+      area.appendChild(fx);
+      setTimeout(()=>fx.remove(),600);
+    };
+  },800);
 }
 
 render();
