@@ -27,17 +27,20 @@ bottom.querySelectorAll("button").forEach((b,i)=>{
   b.onclick=()=>{
     state.tab=b.dataset.tab;
     indicator.style.transform=`translateX(${i*100}%)`;
-    save(); render();
+    save();
+    render();
   };
 });
 
 /* ACTIONS */
 function addToCart(id){
   if(state.cart.includes(id)) return;
-  state.cart.push(id); save(); render();
+  state.cart.push(id);
+  save(); render();
 }
 function removeFromCart(id){
-  state.cart=state.cart.filter(x=>x!==id); save(); render();
+  state.cart=state.cart.filter(x=>x!==id);
+  save(); render();
 }
 function toggleFav(id){
   state.fav.includes(id)
@@ -47,6 +50,8 @@ function toggleFav(id){
 }
 
 /* RENDER */
+let gameInterval=null;
+
 function render(){
   document.getElementById("cart-count").textContent=state.cart.length||"";
   document.getElementById("fav-count").textContent=state.fav.length||"";
@@ -60,6 +65,7 @@ function render(){
   if(state.tab==="profile") renderProfile();
 }
 
+/* VIEWS */
 function renderShop(){
   app.innerHTML=`<h1>🍉 Арбуз Маркет</h1>`+
     products.map(p=>`
@@ -112,14 +118,14 @@ function renderProfile(){
 }
 
 /* GAME */
-let gameInterval=null;
-
 function renderGame(){
   app.innerHTML=`
     <h2>🎮 Лови арбузики</h2>
     <p id="melon-balance">Баланс: 🍉 ${state.watermelons}</p>
     <div id="game-area">
-      <div id="basket">🛒 Air Force · Jordan 4 · Raf</div>
+      <div id="game-placeholder">
+        тут будет фото корзины с кроссовками
+      </div>
     </div>
   `;
   startGame();
@@ -156,6 +162,7 @@ function startGame(){
       state.watermelons=Math.max(0,state.watermelons+delta);
       save();
       balance.textContent=`Баланс: 🍉 ${state.watermelons}`;
+
       const fx=document.createElement("div");
       fx.className="fx";
       fx.textContent=delta>0?"+1":"-5";
@@ -169,7 +176,10 @@ function startGame(){
 }
 
 function stopGame(){
-  if(gameInterval){ clearInterval(gameInterval); gameInterval=null; }
+  if(gameInterval){
+    clearInterval(gameInterval);
+    gameInterval=null;
+  }
 }
 
 render();
